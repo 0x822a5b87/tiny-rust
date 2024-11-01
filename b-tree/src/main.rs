@@ -56,5 +56,8 @@ pub fn add_rs() {
     root.add(6);
     root.add(4);
     root.add(3);
-    println!("{}", root)
+    println!("{}", root);
+
+    let x = root.find(4);
+    println!("find {}", x)
 }

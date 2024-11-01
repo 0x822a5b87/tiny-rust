@@ -5,7 +5,6 @@
 //!
 
 use std::fmt;
-use std::fmt::Write;
 
 pub struct Node<T>
 where
@@ -184,7 +183,7 @@ pub mod se1f {
             self
         }
 
-        fn add_self_child(mut child: Option<Box<Node<T>>>, val: T) -> Option<Box<Node<T>>> {
+        fn add_self_child(child: Option<Box<Node<T>>>, val: T) -> Option<Box<Node<T>>> {
             match child {
                 Some(node) => Some(Box::new(node.add_self(val))),
                 None => Some(Box::new(Node::new(val))),
