@@ -1,8 +1,6 @@
 //!
 //! an implementation for BST
 //!
-//!
-//!
 
 use std::fmt;
 
@@ -129,6 +127,7 @@ pub mod rs_bst {
 
 /// a traditional implementation for BST
 pub mod tradition {
+    use std::cmp::Ordering;
     use crate::bst::Node;
 
     impl<T> Node<T>
@@ -159,6 +158,29 @@ pub mod tradition {
                 None => Some(Box::new(Node::new(val))),
             }
         }
+
+        pub fn find(&self, val: T) -> bool {
+            match &self {
+                &Self {
+                    val: value,
+                    left,
+                    right
+                } => {
+                    match value.cmp(&val) {
+                        Ordering::Less => Node::find_with_option(&self.right, val),
+                        Ordering::Equal => true,
+                        Ordering::Greater => Node::find_with_option(&self.left, val)
+                    }
+                }
+            }
+        }
+
+        pub fn find_with_option(node : &Option<Box<Node<T>>>, val: T) -> bool {
+            match node {
+                None => false,
+                Some(node) => node.find(val),
+            }
+        }
     }
 }
 
@@ -173,21 +195,70 @@ pub mod se1f {
         // `self` must be `mut` rather than `&mut` or `&` due to :
         //  1.1 the struct must be mutable because we are going to modify it;
         //  1.2 when we modify a node, we take the ownership because it maybe changes.
-        pub fn add_self(mut self, val: T) -> Node<T> {
+        pub fn add_self(&mut self, val: T) {
             assert!(self.val != val);
             if self.val < val {
-                self.right = Self::add_self_child(self.right, val);
+                match &mut self.right {
+                    None => self.right = Some(Box::new(Node::new(val))),
+                    Some(right) => right.add_self(val),
+                }
             } else {
-                self.left = Self::add_self_child(self.left, val);
+                match &mut self.left {
+                    None => self.left = Some(Box::new(Node::new(val))),
+                    Some(left) => left.add_self(val),
+                }
             }
-            self
         }
 
-        fn add_self_child(child: Option<Box<Node<T>>>, val: T) -> Option<Box<Node<T>>> {
-            match child {
-                Some(node) => Some(Box::new(node.add_self(val))),
-                None => Some(Box::new(Node::new(val))),
-            }
-        }
+        // fn add_self_child(child: Option<Box<Node<T>>>, val: T) -> Option<Box<Node<T>>> {
+        //     match child {
+        //         Some(node) => Some(Box::new(node.add_self(val))),
+        //         None => Some(Box::new(Node::new(val))),
+        //     }
+        // }
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use crate::bst::Node;
+    use crate::bst::rs_bst::RsNode;
+
+    #[test]
+    fn test_rust_style(){
+        let mut empty = RsNode::new();
+        assert!(!empty.find(0));
+        assert!(!empty.find(1));
+        assert!(!empty.find(2));
+
+        empty.add(0);
+        assert!(empty.find(0));
+        assert!(!empty.find(1));
+        assert!(!empty.find(2));
+        empty.add(2);
+        assert!(empty.find(0));
+        assert!(!empty.find(1));
+        assert!(empty.find(2));
+        empty.add(1);
+        assert!(empty.find(0));
+        assert!(empty.find(1));
+        assert!(empty.find(2));
+    }
+
+    #[test]
+    fn test_traditional_style() {
+        let mut node = Node::new(0);
+        assert!(node.find(0));
+
+        node.add_self(2);
+        assert!(node.find(0));
+        assert!(!node.find(1));
+        assert!(node.find(2));
+
+        node.add_self(1);
+        assert!(node.find(0));
+        assert!(node.find(1));
+        assert!(node.find(2));
+
     }
 }
