@@ -2,6 +2,7 @@
 
 use std::cmp::{max, Ordering};
 use std::fmt::Debug;
+use crate::avl::util::get_height;
 
 type AvlBoxOption<T> = Option<Box<Avl<T>>>;
 
@@ -11,6 +12,23 @@ struct Avl<T: Ord + Debug> {
     height: i32,
     left: Option<Box<Avl<T>>>,
     right: Option<Box<Avl<T>>>,
+}
+
+fn display_avl<T: Ord + std::fmt::Debug>(avl: &Avl<T>, level: usize, v: &str) {
+    println!(
+        "{:indent$}{v}{:?}",
+        "",
+        avl.value,
+        indent = level * 4
+    );
+
+    if let Some(ref left) = avl.left {
+        display_avl(left, level + 1, "L");
+    }
+
+    if let Some(ref right) = avl.right {
+        display_avl(right, level + 1, "R");
+    }
 }
 
 impl<T: Ord + Debug> Avl<T> {
@@ -48,6 +66,8 @@ impl<T: Ord + Debug> Avl<T> {
         }
 
         let mut new_node = self.rotate();
+        let lh = get_height(&new_node.left);
+        let rh = get_height(&new_node.right);
         new_node.update_height();
         *new_node
     }
@@ -83,9 +103,15 @@ impl<T: Ord + Debug> Avl<T> {
                 None => panic!("error"),
                 Some(child) => {
                     // Right-leaning tree
-                    let right = child.right_rotate();
-                    self.right.replace(right);
-                    self.left_rotate()
+                    if child.balance_factor() < 0 {
+                        // put right back
+                        self.right.replace(child);
+                        self.left_rotate()
+                    } else {
+                        let right = child.right_rotate();
+                        self.right.replace(right);
+                        self.left_rotate()
+                    }
                 }
             }
         } else {
@@ -99,22 +125,20 @@ impl<T: Ord + Debug> Avl<T> {
             Some(node) => node
         };
 
-        match &mut child.right {
-            None => {
-                // In this case, the height of itself and its child might be modified
-                child.right.replace(Box::new(self));
-                util::update_height(&mut child.right);
-            }
-            Some(grandchild) => {
-                // In this case, the height of itself and its child might be modified
-                grandchild.left.replace(Box::new(self));
-                util::update_height(&mut child.left);
-                grandchild.update_height();
-            }
-        };
-
-        child.update_height();
-        child
+        if child.right.is_none() {
+            // In this case, the height of itself and its child might be modified
+            child.right.replace(Box::new(self));
+            util::update_height(&mut child.right);
+            child.update_height();
+            child
+        } else {
+            let grandchild = child.right.take();
+            self.left.replace(grandchild.unwrap());
+            self.update_height();
+            child.right.replace(Box::new(self));
+            child.update_height();
+            child
+        }
     }
 
     fn left_rotate(mut self) -> Box<Avl<T>> {
@@ -123,20 +147,19 @@ impl<T: Ord + Debug> Avl<T> {
             Some(node) => node
         };
 
-        match &mut child.left {
-            None => {
-                child.left.replace(Box::new(self));
-                util::update_height(&mut child.left);
-            }
-            Some(grandchild) => {
-                grandchild.right.replace(Box::new(self));
-                util::update_height(&mut child.right);
-                grandchild.update_height();
-            }
-        };
-
-        child.update_height();
-        child
+        if child.left.is_none() {
+            child.left.replace(Box::new(self));
+            util::update_height(&mut child.left);
+            child.update_height();
+            child
+        } else {
+            let grandchild = child.left.take();
+            self.right.replace(grandchild.unwrap());
+            self.update_height();
+            child.left.replace(Box::new(self));
+            child.update_height();
+            child
+        }
     }
 
     fn update_height(&mut self) {
@@ -213,7 +236,7 @@ mod util {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::avl::Avl;
+    use crate::avl::{display_avl, Avl};
 
     #[test]
     fn test_insert() {
@@ -242,7 +265,26 @@ pub mod tests {
         assert_eq!(root.value, 1);
 
         let root = root.insert(5);
+        assert_eq!(root.height, 2);
+        assert_eq!(root.value, 3);
+        let root = root.insert(6);
+        assert_eq!(root.height, 2);
+        assert_eq!(root.value, 3);
+        let root = root.insert(7);
         assert_eq!(root.height, 3);
+        assert_eq!(root.value, 3);
+        let root = root.insert(8);
+        assert_eq!(root.height, 3);
+        assert_eq!(root.value, 3);
+        let root = root.insert(9);
+        assert_eq!(root.height, 3);
+        assert_eq!(root.value, 3);
+        let root = root.insert(10);
+        assert_eq!(root.height, 3);
+        assert_eq!(root.value, 3);
+        let root = root.insert(11);
+        assert_eq!(root.height, 3);
+        assert_eq!(root.value, 7);
     }
 
     #[test]
@@ -413,7 +455,7 @@ pub mod tests {
         }
     }
 
-    fn search_all(avl: &Avl<i32>,vec: Vec<i32>) {
+    fn search_all(avl: &Avl<i32>, vec: Vec<i32>) {
         for v in vec {
             if !avl.search(&v) {
                 panic!("search result not found for [{}]", v);
