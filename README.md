@@ -19,3 +19,109 @@ some tiny project used to practice rust skills
    3. copy
    4. move
    5. drop
+
+## AVL
+
+### left rotation
+
+```mermaid
+---
+title: a imbalanced tree
+---
+flowchart TB
+
+4 --> 3:::child
+4 --> 5
+
+3 --> 1
+3 --> Nil1["Nil"]:::grandchild
+1 --> 0
+1 --> NIl2["Nil"]
+
+classDef child 1,fill:#FFCCCC,stroke:#333;
+classDef grandchild fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+```
+
+```mermaid
+---
+title: first style of rotation
+---
+flowchart TB
+
+4 --> 1
+4 --> 5
+
+1 --> 0
+1 --> 3
+
+classDef child 1,fill:#FFCCCC,stroke:#333;
+classDef grandchild fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+```
+
+```mermaid
+---
+title: second imbalanced tree
+---
+flowchart TB
+
+3 --> 1
+
+1 --> 0
+3 --> 4
+4 --> 5
+
+classDef child 1,fill:#FFCCCC,stroke:#333;
+classDef grandchild fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+```
+
+### the rotation of each different situations
+
+> The other situation is just converse to below situation.
+
+```mermaid
+---
+title: left rotation
+---
+flowchart TB
+
+4 --> 3:::child
+4 --> 5
+
+3 --> 1
+3 --> Nil1["Nil"]:::grandchild
+1 --> 0
+1 --> NIl2["Nil"]:::grandchild
+
+classDef child 1,fill:#FFCCCC,stroke:#333;
+classDef grandchild fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+```
+
+```mermaid
+---
+title: right rotation then left rotation
+---
+flowchart TB
+
+4 --> 3:::child
+4 --> 5
+
+3 --> 0
+3 --> Nil1["Nil"]:::grandchild
+0 --> NIl2["Nil"]:::grandchild
+0 --> 1
+
+classDef child 1,fill:#FFCCCC,stroke:#333;
+classDef grandchild fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+```
+
+### how to choose strategy
+
+| factor of imbalanced node | factor of imbalanced node's child node | strategy                          |
+| ------------------------- | -------------------------------------- | --------------------------------- |
+| > 1                       | > 0                                    | right rotation                    |
+| > 1                       | < 0                                    | left rotation then right rotation |
+| < 1                       | > 0                                    | right rotation then left rotation |
+| < 1                       | < 0                                    | left rotation                     |
+
+
+

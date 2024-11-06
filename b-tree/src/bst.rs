@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_variables, unused_mut, unused_assignments, unused_imports)]
 //!
 //! an implementation for BST
 //!
@@ -163,8 +164,7 @@ pub mod tradition {
             match &self {
                 &Self {
                     val: value,
-                    left,
-                    right
+                    ..
                 } => {
                     match value.cmp(&val) {
                         Ordering::Less => Node::find_with_option(&self.right, val),
