@@ -396,10 +396,28 @@ pub mod tests {
         root.insert(7);
         root.insert(8);
         root.insert(4);
+        root.insert(-1);
 
         for i in 0..9 {
             assert!(root.search(i));
         }
+
+        assert_eq!(6, *root.value());
+
+        assert_eq!(2, *root.left().value());
+        assert_eq!(8, *root.right().value());
+
+        assert_eq!(0, *root.left().left().value());
+        assert_eq!(4, *root.left().right().value());
+
+        assert_eq!(-1, *root.left().left().left().value());
+        assert_eq!(1, *root.left().left().right().value());
+
+        assert_eq!(3, *root.left().right().left().value());
+        assert_eq!(5, *root.left().right().right().value());
+
+        assert_eq!(7, *root.right().left().value());
+        assert_eq!(9, *root.right().right().value());
     }
 
 }
